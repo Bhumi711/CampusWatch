@@ -1,0 +1,470 @@
+@import "tailwindcss";
+
+/* Self-hosted: works offline on a lab laptop. */
+@font-face {
+  font-family: "Archivo";
+  src: url("/fonts/archivo-100_900-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  font-display: swap;
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/jetbrains-mono.woff2") format("woff2");
+  font-weight: 400 500;
+  font-display: swap;
+}
+
+/* Tokens: see DESIGN.md. Rack hardware palette, one ease, one radius rule. */
+@theme {
+  --font-sans: "Archivo", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --color-bg: #090c11;
+  --color-surface: #0f141b;
+  --color-surface-2: #141b24;
+  --color-surface-3: #1b2430;
+  --color-line: #212b38;
+  --color-line-strong: #2e3a4a;
+  --color-ink: #e6ecf3;
+  --color-muted: #97a3b4;
+  --color-faint: #8592a4;
+
+  --color-accent: #38d0e6;
+  --color-accent-strong: #22b8d0;
+  --color-inbound: #1f9fbc;
+  --color-outbound: #d55181;
+
+  --color-ok: #3ddc84;
+  --color-warn: #f5b93d;
+  --color-crit: #ff6b6b;
+  --color-info: #6aa8ff;
+  --color-demo: #f0abfc;
+
+  --radius-panel: 6px;
+  --radius-chip: 3px;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:root {
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --t-hover: 200ms;
+  --t-latch: 260ms;
+  --gap: 16px;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+  body {
+    @apply bg-bg text-ink font-sans antialiased;
+    font-size: 15px;
+    line-height: 1.5;
+    font-stretch: 100%;
+    font-optical-sizing: auto;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  ::selection {
+    background: color-mix(in srgb, var(--color-accent) 35%, transparent);
+    color: var(--color-ink);
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-line-strong) transparent;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+}
+
+@layer components {
+  .card {
+    @apply border border-line bg-surface;
+    border-radius: var(--radius-panel);
+  }
+  .input {
+    @apply h-9 border border-line-strong bg-surface-2 px-3 text-sm text-ink placeholder:text-faint
+      hover:border-faint focus:border-accent focus:outline-none disabled:opacity-50;
+    border-radius: var(--radius-panel);
+  }
+  .label {
+    @apply mb-1.5 block text-xs font-medium text-muted;
+  }
+  .num {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  /* Instrument numerals and panel silkscreen: Archivo condensed. */
+  .numeral {
+    font-stretch: 75%;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    line-height: 0.95;
+  }
+  .silk {
+    font-stretch: 80%;
+    font-weight: 600;
+    font-size: 11.5px;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+  }
+  .mono {
+    font-family: var(--font-mono);
+    font-size: 0.92em;
+    letter-spacing: -0.01em;
+  }
+}
+
+/* ---------- motion verb: latch ---------- */
+.latch {
+  display: inline-block;
+  animation: latch var(--t-latch) var(--ease) both;
+}
+@keyframes latch {
+  from {
+    opacity: 0.25;
+    transform: translateY(-0.18em);
+  }
+}
+
+/* Nav: an LED marker lights and the label steps right; current page keeps its LED lit. */
+.nav-link .nav-led {
+  background: var(--color-line-strong);
+  transition: background-color var(--t-hover) var(--ease), box-shadow var(--t-hover) var(--ease);
+}
+.nav-link .nav-label {
+  transition: translate var(--t-hover) var(--ease);
+}
+.nav-link[aria-current="page"] .nav-led {
+  background: var(--color-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 18%, transparent);
+}
+.nav-link:focus-visible .nav-led {
+  background: var(--color-accent);
+}
+.nav-link:focus-visible .nav-label {
+  translate: 3px 0;
+}
+@media (hover: hover) {
+  .nav-link:hover .nav-led {
+    background: var(--color-accent);
+  }
+  .nav-link:hover .nav-label {
+    translate: 3px 0;
+  }
+}
+
+/* Primary button: the fill floods from the left. */
+.btn-flood {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+}
+.btn-flood::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--color-ink);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 260ms var(--ease);
+}
+.btn-flood:focus-visible::before,
+.btn-flood:active::before {
+  transform: scaleX(1);
+}
+@media (hover: hover) {
+  .btn-flood:hover:not(:disabled)::before {
+    transform: scaleX(1);
+  }
+}
+
+/* Segmented options: a signal line draws under the one you point at. */
+.seg {
+  position: relative;
+}
+.seg::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 3px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transition: transform var(--t-hover) var(--ease);
+}
+.seg[aria-checked="true"]::after {
+  transform: scaleX(1);
+  opacity: 0.6;
+}
+.seg:focus-visible::after {
+  transform: scaleX(1);
+}
+@media (hover: hover) {
+  .seg:hover::after {
+    transform: scaleX(1);
+  }
+}
+
+/* Secondary buttons and card links: the icon travels. */
+.icon-travel svg {
+  transition: translate var(--t-hover) var(--ease), rotate 420ms var(--ease);
+}
+.icon-travel:focus-visible svg.travel-x,
+.icon-travel:focus-visible .travel-x {
+  translate: 4px 0;
+}
+.icon-travel:focus-visible svg.travel-turn {
+  rotate: 120deg;
+}
+@media (hover: hover) {
+  .icon-travel:hover svg.travel-x,
+  .icon-travel:hover .travel-x {
+    translate: 4px 0;
+  }
+  .icon-travel:hover svg.travel-turn {
+    rotate: 120deg;
+  }
+  .icon-travel:hover svg.travel-x-back {
+    translate: -4px 0;
+  }
+  .icon-travel:hover svg.travel-y {
+    translate: 0 -2px;
+  }
+}
+
+/* Rows that open something: a signal bar rises at the edge, the name steps right. */
+.row-link {
+  position: relative;
+}
+.row-link > :first-child {
+  position: relative;
+}
+.row-link > :first-child::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  background: var(--color-accent);
+  transform: scaleY(0);
+  transition: transform var(--t-hover) var(--ease);
+}
+.row-link .row-name {
+  display: inline-block;
+  transition: translate var(--t-hover) var(--ease), color var(--t-hover) var(--ease);
+}
+.row-link:focus-within > :first-child::before {
+  transform: scaleY(1);
+}
+.row-link:focus-within .row-name {
+  translate: 4px 0;
+  color: var(--color-accent);
+}
+@media (hover: hover) {
+  .row-link:hover {
+    background: color-mix(in srgb, var(--color-surface-2) 70%, transparent);
+  }
+  .row-link:hover > :first-child::before {
+    transform: scaleY(1);
+  }
+  .row-link:hover .row-name {
+    translate: 4px 0;
+  }
+}
+
+/* ---------- the front panel (signature) ---------- */
+.port {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  min-width: 46px;
+  padding: 6px 4px 4px;
+  border-radius: var(--radius-chip);
+  transition: translate var(--t-hover) var(--ease), background-color var(--t-hover) var(--ease);
+}
+.port-jack {
+  position: relative;
+  width: 34px;
+  height: 28px;
+  border-radius: 3px;
+  background: #06080c;
+  border: 1px solid var(--color-line-strong);
+  box-shadow: inset 0 2px 0 #000, inset 0 -1px 0 #ffffff0d;
+}
+/* the RJ45 latch notch */
+.port-jack::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -1px;
+  width: 12px;
+  height: 5px;
+  translate: -50% 0;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-line-strong);
+  border-bottom: 0;
+  border-radius: 2px 2px 0 0;
+}
+.led {
+  position: absolute;
+  top: 4px;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #222b36;
+}
+.led-link {
+  left: 5px;
+}
+.led-act {
+  right: 5px;
+}
+.port[data-link="ok"] .led-link {
+  background: var(--color-ok);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--color-ok) 60%, transparent);
+}
+.port[data-link="warn"] .led-link {
+  background: var(--color-warn);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--color-warn) 60%, transparent);
+}
+.port[data-link="crit"] .led-link,
+.port[data-link="alarm"] .led-link {
+  background: var(--color-crit);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--color-crit) 60%, transparent);
+}
+.port[data-act="on"] .led-act {
+  background: var(--color-warn);
+  animation: act var(--period, 1s) steps(1, end) infinite;
+  animation-delay: var(--phase, 0s);
+}
+@keyframes act {
+  0%,
+  55% {
+    opacity: 1;
+  }
+  56%,
+  100% {
+    opacity: 0.18;
+  }
+}
+.port[data-link="off"] .port-jack,
+.port[data-link="alarm"] .port-jack {
+  border-style: dashed;
+}
+.port:focus-visible {
+  outline-offset: 0;
+}
+@media (hover: hover) {
+  .port:hover {
+    translate: 0 -2px;
+    background: var(--color-surface-3);
+  }
+}
+.port:active {
+  translate: 0 0;
+}
+
+/* Header: the sweep runs to the next sample (real time to next poll). */
+.sweep {
+  transform-origin: left;
+  animation: sweep var(--interval, 10s) linear both;
+  animation-delay: var(--offset, 0s);
+}
+@keyframes sweep {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* Page swap (View Transitions API): sidebar and header hold, content latches in. */
+main {
+  view-transition-name: content;
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+::view-transition-old(content) {
+  animation: vt-out 140ms var(--ease) both;
+}
+::view-transition-new(content) {
+  animation: vt-in 280ms var(--ease) both;
+}
+@keyframes vt-out {
+  to {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+@keyframes vt-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+/* Recharts: recessive axes, ink-token text. */
+.recharts-cartesian-axis-tick-value {
+  fill: var(--color-faint);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.recharts-legend-item-text {
+  color: var(--color-muted) !important;
+  font-size: 12px;
+}
+.recharts-surface:focus,
+.recharts-wrapper:focus {
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  /* LEDs hold steady: lit means traffic, no blinking. */
+  .port[data-act="on"] .led-act {
+    animation: none;
+    opacity: 1;
+  }
+  .sweep {
+    animation: none;
+    transform: scaleX(var(--progress, 0));
+  }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+  .nav-link:hover .nav-label,
+  .nav-link:focus-visible .nav-label,
+  .row-link:hover .row-name {
+    translate: none;
+  }
+  .nav-link:hover .nav-label,
+  .row-link:hover .row-name {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+}

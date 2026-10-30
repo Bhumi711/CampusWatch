@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en" class="bg-bg">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#090c11" />
+    <meta name="robots" content="noindex" />
+    <meta name="description" content="CampusWatch monitors campus network devices and links: live traffic per area, congestion and anomaly alerts, from demo, local or SNMP data." />
+    <link rel="preload" href="/fonts/archivo-100_900-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <title>CampusWatch · Smart Campus Network Monitor</title>
+  </head>
+  <body>
+    <div id="root">
+      <main id="main" style="font-family: system-ui, sans-serif; color: #e6ecf3; padding: 24px">
+        <h1 style="font-size: 17px; margin: 0">CampusWatch</h1>
+        <p style="color: #97a3b4; font-size: 14px">Loading network status. This dashboard needs JavaScript and the CampusWatch backend on port 8000.</p>
+        <nav aria-label="Sections" style="font-size: 14px">
+          <a href="/" style="color: #38d0e6">Overview</a> · <a href="/network" style="color: #38d0e6">Network and devices</a> ·
+          <a href="/analytics" style="color: #38d0e6">Traffic analytics</a> · <a href="/alerts" style="color: #38d0e6">Anomalies and alerts</a> ·
+          <a href="/settings" style="color: #38d0e6">Settings</a> · <a href="/network/devices/13" style="color: #38d0e6">Busiest access point</a>
+        </nav>
+      </main>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
